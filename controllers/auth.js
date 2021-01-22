@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
     }
     catch(err) {
         err.statusCode = 500;
-        throw err;
+        return res.status(500).json({ message: err.message });
     }
     if (!decodedToken) {
         return res.status(500).json({ message: "Authentication Failed!" });

@@ -74,7 +74,13 @@ exports.addPlayer = (req, res) => {
                         if (err) {
                             return res.status(500).json({ message: err.message });
                         }
-                        return res.status(200).json({ message: "Player Added", token: token });
+                        let sql = "INSERT INTO playerData (playerId) VALUES ('" + playerId + "')";
+                        con.query(sql, (err, result) => {
+                            if (err) {
+                                return res.status(500).json({ message: err.message });
+                            }
+                            return res.status(200).json({ message: "Player Added", token: token });
+                        });
                     });
                 });
             });
@@ -147,8 +153,6 @@ exports.acceptReq = (req, res) => {
     let acceptedId = req.body.acceptedId;
     let playerId = req.playerId;
 
-    console.log(acceptedId,playerId);
-
     let sql = "Select * from friends where playerId='" + playerId + "'";
     db.query(sql, (err, result) => {
         if (err) {
@@ -198,6 +202,332 @@ exports.acceptReq = (req, res) => {
         })
 
     })
+}
 
+exports.updateClothingPurchase = (req, res) => {
+
+    let playerId = req.playerId;
+    let newClothId = req.body.clothId;
+
+    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: err.message });
+        }
+
+        let updatedCloths;
+
+        if (result[0].cloths) {
+            updatedCloths = result[0].cloths + "," + newClothId;
+        }
+        else {
+            updatedCloths = newClothId;
+        }
+
+        let sql = "Update purchasedItems set cloths='" + updatedCloths + "'" + " where playerId='" + playerId + "'";
+        db.query(sql, (err, result) => {
+            if (err) return res.status(500).json({ message: err.message });
+            if (result) {
+                return res.status(200).json({ message: "Cloths Updated Successfully" });
+            }
+        });
+
+    })
+}
+
+exports.updateEmotePurchase = (req, res) => {
+
+    let playerId = req.playerId;
+    let newEmoteId = req.body.emoteId;
+
+    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: err.message });
+        }
+
+        let updatedEmotes;
+
+        if (result[0].emotes) {
+            updatedEmotes = result[0].emotes + "," + newEmoteId;
+        }
+        else {
+            updatedEmotes = newEmoteId;
+        }
+
+        let sql = "Update purchasedItems set emotes='" + updatedEmotes + "'" + " where playerId='" + playerId + "'";
+        db.query(sql, (err, result) => {
+            if (err) return res.status(500).json({ message: err.message });
+            if (result) {
+                return res.status(200).json({ message: "Emotes Updated Successfully" });
+            }
+        });
+
+    })
+}
+
+exports.updateCharacterPurchase = (req, res) => {
+
+    let playerId = req.playerId;
+    let newCharacterId = req.body.characterId;
+
+    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: err.message });
+        }
+
+        let updatedCharacters;
+
+        if (result[0].characters) {
+            updatedCharacters = result[0].characters + "," + newCharacterId;
+        }
+        else {
+            updatedCharacters = newCharacterId;
+        }
+
+        let sql = "Update purchasedItems set characters='" + updatedCharacters + "'" + " where playerId='" + playerId + "'";
+        db.query(sql, (err, result) => {
+            if (err) return res.status(500).json({ message: err.message });
+            if (result) {
+                return res.status(200).json({ message: "Characters Updated Successfully" });
+            }
+        });
+
+    })
+}
+
+exports.updatePetPurchase = (req, res) => {
+
+    let playerId = req.playerId;
+    let newPetId = req.body.petId;
+
+    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: err.message });
+        }
+
+        let updatedPets;
+
+        if (result[0].pets) {
+            updatedPets = result[0].pets + "," + newPetId;
+        }
+        else {
+            updatedPets = newPetId;
+        }
+
+        let sql = "Update purchasedItems set Pets='" + updatedPets + "'" + " where playerId='" + playerId + "'";
+        db.query(sql, (err, result) => {
+            if (err) return res.status(500).json({ message: err.message });
+            if (result) {
+                return res.status(200).json({ message: "Pets Updated Successfully" });
+            }
+        });
+
+    })
+}
+
+exports.updatePetEmotePurchase = (req, res) => {
+
+    let playerId = req.playerId;
+    let newPetEmoteId = req.body.petEmoteId;
+
+    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: err.message });
+        }
+
+        let updatedPetEmotes;
+
+        if (result[0].petsEmotes) {
+            updatedPetEmotes = result[0].petsEmotes + "," + newPetEmoteId;
+        }
+        else {
+            updatedPetEmotes = newPetEmoteId;
+        }
+
+        let sql = "Update purchasedItems set petsEmotes='" + updatedPetEmotes + "'" + " where playerId='" + playerId + "'";
+        db.query(sql, (err, result) => {
+            if (err) return res.status(500).json({ message: err.message });
+            if (result) {
+                return res.status(200).json({ message: "Pets Emotes Updated Successfully" });
+            }
+        });
+
+    })
+}
+
+exports.updateDailyReward = (req, res) => {
+
+    let daysToUpdate = req.body.daysToUpdate;
+    let category = req.body.category;
+    let rewardId = req.body.rewardId;
+
+    let sql = "Update dailyrewards set rewardCategory='" + category + "' , rewardId='" + rewardId + "' where days='" + daysToUpdate + "'";
+    db.query(sql, (err, result) => {
+        if (err) return res.status(500).json({ message: err.message });
+        if (result) {
+            return res.status(200).json({ message: "Daily Rewards Updated Successfully" });
+        }
+    });
+
+}
+
+exports.viewDailyReward = (req, res) => {
+    let sql = "Select * from dailyRewards";
+    db.query(sql, (err, result) => {
+        if (err) return res.status(500).json({ message: err.message });
+        if (result) {
+            return res.status(200).json({ rewards: result });
+        }
+    });
+}
+
+exports.viewLeaderboard = (req, res) => {
+
+    let playersByKills;
+    let playersByWins;
+
+    let sql = "SELECT * FROM (playerData inner join player_details on playerData.playerId=player_details.playerId inner join friends on playerData.playerId=friends.playerId) ORDER BY kills Desc Limit 20";
+
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        if (result) {
+            playersByKills = result;
+            let sql2 = "SELECT * FROM (playerData inner join player_details on playerData.playerId=player_details.playerId inner join friends on playerData.playerId=friends.playerId) ORDER BY win Desc Limit 20";
+
+            con.query(sql2, function (err, result) {
+                if (err) throw err;
+                if (result) {
+                    playersByWins = result;
+                    res.status(200).json({ playersByKills: playersByKills, playersByWins: playersByWins });
+                }
+            });
+        }
+    });
+}
+
+exports.postFeedback = (req, res) => {
+
+    let username = req.body.username;
+    let feedback = req.body.feedback;
+    let sql = "INSERT INTO feedback (username,feedback) VALUES ('" + username + "','" + feedback + "')";
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        return res.status(200).json({ message: "feedback added" });
+    });
+}
+
+exports.postMessages = (req, res) => {
+
+    let message = req.body.message;
+    let sql = "INSERT INTO messages (message) VALUES ('" + message + "')";
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        return res.status(200).json({ message: "message sent" });
+    });
+}
+
+exports.playerData = (req, res) => {
+
+    let playerId = req.playerId;
+    let lastmatchkills = req.body.lastmatchkills;
+    let lastmatchdamage = req.body.lastmatchdamage;
+    let matchresult = req.body.result;
+
+    let sql = "Select * from playerData where playerId=' " + playerId + "'";
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        if (result.length > 0) {
+            let totalmatch = result[0].totalmatchplayed;
+            totalmatch += 1;
+            let kills = parseInt(result[0].kills) + parseInt(lastmatchkills);
+            let dem = parseInt(result[0].damages) + parseInt(lastmatchdamage);
+            let win;
+            let loss;
+            if (matchresult == "win") {
+                win = result[0].win + 1;
+                loss = result[0].loss;
+            }
+            else {
+                win = result[0].win;
+                loss = result[0].loss + 1;
+            }
+            var sql = "UPDATE playerData SET totalmatchplayed = '" + totalmatch + "',lastmatchkills =   '" + lastmatchkills + "' ,kills =   '" + kills + "'  ,damages =   '" + dem + "', win =   '" + win + "',loss =   '" + loss + "' WHERE playerId = ' " + playerId + "'";
+            db.query(sql, (err, result) => {
+                if (err) throw err;
+                return res.status(200).json({ message: "player data updated Successfully" });
+            })
+
+        }
+        else {
+            let tmp = 1;
+            let win
+            let loss;
+            if (matchresult == "win") {
+                win = 1;
+                loss = 0;
+            }
+
+            let sqll = "INSERT INTO playerdata (playerId, totalmatchplayed, lastmatchkills, kills, damages, win, loss) VALUES ('" + playerId + "','" + tmp + "','" + lastmatchkills + "','" + lastmatchkills + "','" + lastmatchdamage + "','" + win + "','" + loss + "')";
+            db.query(sqll, (err, result) => {
+                if (err) throw err;
+                return res.status(200).json({ message: "player data updated Successfully" });
+            })
+        }
+    })
+}
+
+
+
+exports.getPlayerData = (req, res) => {
+    const playerId = req.query.id;
+    let sql = "Select * from playerData where playerId=' " + playerId + "'";
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        if (result.length > 0) {
+            res.status(200).json({
+                totalmatchplayed: result[0].totalmatchplayed,
+                lastmatchkills: result[0].lastmatchkills,
+                kills: result[0].kills,
+                damages: result[0].damages,
+                win: result[0].win,
+                loss: result[0].loss
+            });
+
+        }
+        else {
+            res.status(500).json({ message: "user not found" });
+        }
+    })
+
+}
+
+exports.toggelmaintainance = (req, res) => {
+    var sql = "SELECT * FROM maintenancestatus";
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        if (result[0].status == 1) {
+            var sql = "UPDATE maintenancestatus SET status =0";
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+                return res.status(200).send('toggled')
+            });
+        }
+        else {
+            var sql = "UPDATE maintenancestatus SET status =1";
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+                return res.status(200).send('toggled')
+            });
+        }
+    });
 
 }
