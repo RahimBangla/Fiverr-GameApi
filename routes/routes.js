@@ -20,6 +20,6 @@ router.get("/viewDailyReward", checkMantainence, controllers.viewDailyReward);
 router.get("/leaderboard", checkMantainence, controllers.viewLeaderboard);
 router.post("/updatePlayerData",checkMantainence,isAuth, controllers.playerData);
 router.get("/getPlayerData?:id", checkMantainence, controllers.getPlayerData);
-router.get('/togglemaintainance',controllers.toggelmaintainance);
+router.post('/toggleMaintainance',controllers.toggelmaintainance);
 
 module.exports = router;

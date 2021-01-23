@@ -7,7 +7,7 @@ exports.checkPlayer = (req, res) => {
     const playerId = req.query.id;
 
     //search for playerid
-    let sql = "Select * from (player_details inner join purchaseditems on player_details.playerId=purchaseditems.playerId) where player_details.playerId='" + playerId + "'";
+    let sql = "Select * from (player_details inner join ownedItems on player_details.playerId=ownedItems.playerId) where player_details.playerId='" + playerId + "'";
 
     const token = jwt.sign({
         playerId: playerId
@@ -59,7 +59,7 @@ exports.addPlayer = (req, res) => {
                 playerId: playerId
             }, "kwi9owl");
 
-            let sql = "INSERT INTO purchasedItems (playerId) VALUES ('" + playerId + "')";
+            let sql = "INSERT INTO ownedItems (playerId) VALUES ('" + playerId + "')";
             con.query(sql, (err, result) => {
                 if (err) {
                     return res.status(500).json({ message: err.message });
@@ -138,7 +138,13 @@ exports.sendRequest = (req, res) => {
                 db.query(sql, (err, result) => {
                     if (err) return res.status(500).json({ message: err.message });
                     if (result) {
-                        return res.status(200).json({ message: "Request Sent Successfully" });
+                        let sql = "Update friendrequests set fr_recieved='" + req.playerId + "'" + " where playerId='" + toSend + "'";
+                        db.query(sql, (err, result) => {
+                            if (err) return res.status(500).json({ message: err.message });
+                            if (result) {
+                                return res.status(200).json({ message: "Request Sent Successfully" });
+                            }
+                        });
                     }
                 });
             }
@@ -152,6 +158,7 @@ exports.acceptReq = (req, res) => {
 
     let acceptedId = req.body.acceptedId;
     let playerId = req.playerId;
+    let newFrs;
 
     let sql = "Select * from friends where playerId='" + playerId + "'";
     db.query(sql, (err, result) => {
@@ -181,22 +188,36 @@ exports.acceptReq = (req, res) => {
                 }
 
                 let friendReqs = (result[0].fr_recieved).split(',');
-                let newFrs;
 
-                friendReqs.map(fr => {
-                    if (fr !== acceptedId) {
-                        newFrs = "," + fr;
-                    }
-                })
+                if (friendReqs.length == 1) {
+                    let sql = "Update friendrequests set fr_recieved= NULL where playerId='" + req.playerId + "'";
+                    db.query(sql, (err, result) => {
+                        if (err) return res.status(500).json({ message: err.message });
+                        if (result) {
+                            return res.status(200).json({ message: "Friend Added Successfully" });
+                        }
+                    });
+                }
+                else {
 
-                let sql = "Update friendrequests set fr_recieved='" + newFrs + "'" + " where playerId='" + req.playerId + "'";
-                db.query(sql, (err, result) => {
-                    if (err) return res.status(500).json({ message: err.message });
-                    if (result) {
-                        return res.status(200).json({ message: "Friend Added Successfully" });
-                    }
-                });
-
+                    friendReqs.map(fr => {
+                        if (fr != acceptedId) {
+                            if (newFrs) {
+                                newFrs += "," + fr;
+                            }
+                            else {
+                                newFrs = fr;
+                            }
+                        }
+                    })
+                    let sql = "Update friendrequests set fr_recieved='" + newFrs + "'" + " where playerId='" + req.playerId + "'";
+                    db.query(sql, (err, result) => {
+                        if (err) return res.status(500).json({ message: err.message });
+                        if (result) {
+                            return res.status(200).json({ message: "Friend Added Successfully" });
+                        }
+                    });
+                }
             })
 
         })
@@ -209,7 +230,7 @@ exports.updateClothingPurchase = (req, res) => {
     let playerId = req.playerId;
     let newClothId = req.body.clothId;
 
-    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+    let sql = "Select * from ownedItems where playerId='" + playerId + "'";
 
     db.query(sql, (err, result) => {
         if (err) {
@@ -225,7 +246,7 @@ exports.updateClothingPurchase = (req, res) => {
             updatedCloths = newClothId;
         }
 
-        let sql = "Update purchasedItems set cloths='" + updatedCloths + "'" + " where playerId='" + playerId + "'";
+        let sql = "Update ownedItems set cloths='" + updatedCloths + "'" + " where playerId='" + playerId + "'";
         db.query(sql, (err, result) => {
             if (err) return res.status(500).json({ message: err.message });
             if (result) {
@@ -241,7 +262,7 @@ exports.updateEmotePurchase = (req, res) => {
     let playerId = req.playerId;
     let newEmoteId = req.body.emoteId;
 
-    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+    let sql = "Select * from ownedItems where playerId='" + playerId + "'";
 
     db.query(sql, (err, result) => {
         if (err) {
@@ -257,7 +278,7 @@ exports.updateEmotePurchase = (req, res) => {
             updatedEmotes = newEmoteId;
         }
 
-        let sql = "Update purchasedItems set emotes='" + updatedEmotes + "'" + " where playerId='" + playerId + "'";
+        let sql = "Update ownedItems set emotes='" + updatedEmotes + "'" + " where playerId='" + playerId + "'";
         db.query(sql, (err, result) => {
             if (err) return res.status(500).json({ message: err.message });
             if (result) {
@@ -273,7 +294,7 @@ exports.updateCharacterPurchase = (req, res) => {
     let playerId = req.playerId;
     let newCharacterId = req.body.characterId;
 
-    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+    let sql = "Select * from ownedItems where playerId='" + playerId + "'";
 
     db.query(sql, (err, result) => {
         if (err) {
@@ -289,7 +310,7 @@ exports.updateCharacterPurchase = (req, res) => {
             updatedCharacters = newCharacterId;
         }
 
-        let sql = "Update purchasedItems set characters='" + updatedCharacters + "'" + " where playerId='" + playerId + "'";
+        let sql = "Update ownedItems set characters='" + updatedCharacters + "'" + " where playerId='" + playerId + "'";
         db.query(sql, (err, result) => {
             if (err) return res.status(500).json({ message: err.message });
             if (result) {
@@ -305,7 +326,7 @@ exports.updatePetPurchase = (req, res) => {
     let playerId = req.playerId;
     let newPetId = req.body.petId;
 
-    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+    let sql = "Select * from ownedItems where playerId='" + playerId + "'";
 
     db.query(sql, (err, result) => {
         if (err) {
@@ -321,7 +342,7 @@ exports.updatePetPurchase = (req, res) => {
             updatedPets = newPetId;
         }
 
-        let sql = "Update purchasedItems set Pets='" + updatedPets + "'" + " where playerId='" + playerId + "'";
+        let sql = "Update ownedItems set Pets='" + updatedPets + "'" + " where playerId='" + playerId + "'";
         db.query(sql, (err, result) => {
             if (err) return res.status(500).json({ message: err.message });
             if (result) {
@@ -337,7 +358,7 @@ exports.updatePetEmotePurchase = (req, res) => {
     let playerId = req.playerId;
     let newPetEmoteId = req.body.petEmoteId;
 
-    let sql = "Select * from purchasedItems where playerId='" + playerId + "'";
+    let sql = "Select * from ownedItems where playerId='" + playerId + "'";
 
     db.query(sql, (err, result) => {
         if (err) {
@@ -353,7 +374,7 @@ exports.updatePetEmotePurchase = (req, res) => {
             updatedPetEmotes = newPetEmoteId;
         }
 
-        let sql = "Update purchasedItems set petsEmotes='" + updatedPetEmotes + "'" + " where playerId='" + playerId + "'";
+        let sql = "Update ownedItems set petsEmotes='" + updatedPetEmotes + "'" + " where playerId='" + playerId + "'";
         db.query(sql, (err, result) => {
             if (err) return res.status(500).json({ message: err.message });
             if (result) {
