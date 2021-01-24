@@ -20,6 +20,9 @@ router.get("/viewDailyReward", checkMantainence, controllers.viewDailyReward);
 router.get("/leaderboard", checkMantainence, controllers.viewLeaderboard);
 router.post("/updatePlayerData",checkMantainence,isAuth, controllers.playerData);
 router.get("/getPlayerData?:id", checkMantainence, controllers.getPlayerData);
-router.post('/toggleMaintainance',controllers.toggelmaintainance);
-
+router.get('/checkMaintainance',controllers.toggelmaintainance);
+router.post("/updatePlayerDetails", checkMantainence, isAuth, controllers.updatePlayerDetails);
+router.get("/getActiveFriends?:id", checkMantainence, controllers.friendsData);
+router.get("/getSentRequests?:id", checkMantainence, controllers.getSentRequests);
+router.get("/getRecievedRequests?:id", checkMantainence, controllers.getRecievedRequests);
 module.exports = router;

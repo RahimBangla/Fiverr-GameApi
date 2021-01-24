@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
         if (result) {
             let data = result[0].status;
             if(data==1){
-               return res.status(500).json({ message: "System is under maintenance" });
+               return res.status(408).json({ message: "System is under maintenance" });
             }
             else {
                 next();

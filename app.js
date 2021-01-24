@@ -3,6 +3,9 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const app = express();
 const path = require("path");
+process.on('uncaughtException', function (err) {
+    console.log(err);
+});
 const routes = require("./routes/routes");
 
 //middlewares

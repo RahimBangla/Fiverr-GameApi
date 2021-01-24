@@ -1,11 +1,11 @@
 const db = require("./../mysqlconnection");
 const jwt = require("jsonwebtoken");
 const con = require("./../mysqlconnection");
+const mysql2 = require("mysql2-promise")();
 
-exports.checkPlayer = (req, res) => {
+exports.checkPlayer = async (req, res) => {    
 
-    const playerId = req.query.id;
-
+    let playerId = req.query.id;
     //search for playerid
     let sql = "Select * from (player_details inner join ownedItems on player_details.playerId=ownedItems.playerId) where player_details.playerId='" + playerId + "'";
 
@@ -533,22 +533,103 @@ exports.getPlayerData = (req, res) => {
 
 exports.toggelmaintainance = (req, res) => {
     var sql = "SELECT * FROM maintenancestatus";
-    con.query(sql, function (err, result) {
-        if (err) throw err;
-        if (result[0].status == 1) {
-            var sql = "UPDATE maintenancestatus SET status =0";
-            con.query(sql, function (err, result) {
-                if (err) throw err;
-                return res.status(200).send('toggled')
-            });
-        }
-        else {
-            var sql = "UPDATE maintenancestatus SET status =1";
-            con.query(sql, function (err, result) {
-                if (err) throw err;
-                return res.status(200).send('toggled')
-            });
-        }
-    });
 
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        if (result) {
+            let data = result[0].status;
+            if (data == 1) {
+                return res.status(408).json({ message: "System is under maintenance" });
+            }
+            else {
+                return res.status(200).json({ message: "System is working fine" });
+            }
+        }
+    })
+
+}
+
+exports.updatePlayerDetails = (req, res) => {
+
+    let playerId = req.playerId;
+    let level = req.body.level;
+    let experience = req.body.experience;
+    let profilePicture = req.body.profilePicture;
+    let curCloth = req.body.curCloth;
+    let curChar = req.body.curChar;
+
+    let sql = "UPDATE player_Details SET level = '" + level + "',experience =   '" + experience + "' ,profilePicture =   '" + profilePicture + "'  ,curCloth =   '" + curCloth + "', cur_Char =   '" + curChar + "' WHERE playerId = ' " + playerId + "'";
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: err.message });
+        };
+        return res.status(200).json({ message: "Player Details Updated Successfully" });
+    })
+
+}
+
+exports.friendsData = async (req, res) => {
+
+    const playerId = req.query.id;
+    let dataToSend = [];
+    let usernames = [];
+
+    let sql = "Select * from friends where playerId='" + playerId + "'";
+    const result = await mysql2.query(sql);
+    const friendsDB = ((result[0])[0].friends);
+
+    if (friendsDB) {
+        let friends = (friendsDB).split(',');
+        for (let i = 0; i < friends.length; i++) {
+            let sql = "Select * from (player_details inner join ownedItems on player_details.playerId=ownedItems.playerId inner join friends on player_details.playerId=friends.playerId inner join friendrequests on player_details.playerId=friendrequests.playerId) where player_details.playerId='" + friends[i] + "'";
+            let result = await mysql2.query(sql);
+            dataToSend.push(result[0][0]);
+            usernames.push((result[0][0]).username)
+        }
+    }
+
+    res.status(200).json({ message: "Player Friends Are: ",friendsUsernames:usernames, friendsData: dataToSend })
+
+}
+
+exports.getSentRequests = async (req, res) => {
+
+    const playerId = req.query.id;
+    let usernames = [];
+
+    let sql = "Select * from friendrequests where playerId='" + playerId + "'";
+    const result = await mysql2.query(sql);
+    const reqs = ((result[0])[0].fr_sent);
+
+    if (reqs) {
+        let frSentArray = (reqs).split(',');
+        for (let i = 0; i < frSentArray.length; i++) {
+            let sql = "Select * from (player_details inner join ownedItems on player_details.playerId=ownedItems.playerId inner join friends on player_details.playerId=friends.playerId inner join friendrequests on player_details.playerId=friendrequests.playerId) where player_details.playerId='" + frSentArray[i] + "'";
+            let result = await mysql2.query(sql);
+            usernames.push((result[0][0]).username)
+        }
+    }
+
+    res.status(200).json({ message: "Player Sent Requests Are: ", fr_sent:usernames})
+}
+
+exports.getRecievedRequests = async (req, res) => {
+
+    const playerId = req.query.id;
+    let usernames = [];
+
+    let sql = "Select * from friendrequests where playerId='" + playerId + "'";
+    const result = await mysql2.query(sql);
+    const reqs = ((result[0])[0].fr_recieved);
+
+    if (reqs) {
+        let frRecArray = (reqs).split(',');
+        for (let i = 0; i < frRecArray.length; i++) {
+            let sql = "Select * from (player_details inner join ownedItems on player_details.playerId=ownedItems.playerId inner join friends on player_details.playerId=friends.playerId inner join friendrequests on player_details.playerId=friendrequests.playerId) where player_details.playerId='" + frRecArray[i] + "'";
+            let result = await mysql2.query(sql);
+            usernames.push((result[0][0]).username)
+        }
+    }
+
+    res.status(200).json({ message: "Player Received Requests Are: ", fr_recieved:usernames})
 }
